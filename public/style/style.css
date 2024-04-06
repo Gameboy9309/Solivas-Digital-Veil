@@ -1,0 +1,157 @@
+/* CSS is how you can add style to your website, such as colors, fonts, and positioning of your
+   HTML content. To learn how to do something, just try searching Google for questions like
+   "how to change link color." */
+
+body {
+  background-color: black;
+  background-image: url('/images/aesthetic-icegif-18.gif');
+	background-position: center;
+	background-repeat: round;
+	background-attachment: fixed;
+  font-size: 18px;
+  font-family: "Quicksand";
+  margin: 0;
+}
+
+p {
+  line-height: 1.6em; /*I find the default HTML line-height tends to be a bit claustrophobic for main text*/
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+.right {
+  float: right;
+  margin-left: 1em;
+}
+.left {
+  float: left;
+  margin-right: 1em;
+}
+.center {
+  display: block;
+  margin-right: auto;
+  margin-left: auto;
+  text-align: center;
+}
+@media only screen and (min-width: 600px) {
+  .small {
+    max-width: 60%;
+    height: auto;
+  }
+}
+.caption {
+  margin-top: 0;
+  font-size: 0.9em;
+  font-style: italic;
+}
+
+a {
+  color: #cc7400;
+}
+a:hover { 
+  background-color: #34220b;
+}
+
+h1, h2, h3, h4, h5 {
+  color: rgb(140, 40, 255)
+}
+
+hr {
+  border-width: 2px 0 0 0;
+  border-style: dashed;
+  border-color: #6124a781; 
+}
+
+/*#CONTAINER is the rectangle that has contains everything but the background!*/
+#container {
+  margin: 3em auto;
+  width: 90%;
+	max-width: 700px;
+	background-color: black;
+  color: #7700ff; 
+  outline-color: #2e0063;
+  outline-style: solid;
+  outline-width: 4px;
+  outline-offset: 0;
+}
+
+#content {
+  padding: 10px 5% 20px 5%;
+}
+
+
+/*HEADER STYLE*/
+#header {
+  background-color: black;
+  padding: 0 5%;
+}
+#header ul {
+  display: inline-block;
+  list-style-type: none;
+  padding: 0;
+  margin-bottom: 1em;
+  margin-top: 1em;
+}
+#header li {
+  font-size: 1.2em;
+  display: inline-block;
+  margin-right: 0.2em;
+  margin-bottom: 0.8em;
+  margin-top: 0.8em;
+}
+#header li a {
+  color: #7700ff;
+  background-color: #14002c;
+  border-width: 0.3em;
+  border-style: outset;
+  border-color: #14002c;
+  padding: 0.3em 1.5em 0.2em 0.5em;
+  text-decoration: none;
+  font-weight: bold;
+}
+#header li a:hover {
+  background-color: #2c0061;
+  border-color: #38007c;
+}
+#header li a:active {
+  background-color: #14002c;
+  border-color: #14002c;
+  color: #cc7400;
+}
+
+/*POST LIST STYLE*/
+#postlistdiv ul {
+  font-size: 1.2em;
+  padding: 0;
+  list-style-type: none;
+}
+#recentpostlistdiv ul {
+  font-size: 1.2em;
+  padding: 0;
+  list-style-type: none;
+}
+.moreposts {
+  font-size: 0.8em;
+  margin-top: 0.2em;
+}
+
+/*NEXT AND PREVIOUS LINKS STYLE*/
+#nextprev {
+  text-align: center;
+  margin-top: 1.4em;
+}
+
+/*DISQUS STYLE*/
+#disqus_thread {
+  margin-top: 1.6em;
+}
+
+/*FOOTER STYLE*/
+#footer {
+  font-size: 0.8em;
+  padding: 0 5% 10px 5%;
+}
