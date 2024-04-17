@@ -1,7 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap')
 
 body {
     background-color: black;
-    color: white; /* Optional: Sets text color to white for better visibility */
+    color: rgb(104, 0, 165); /* Optional: Sets text color to white for better visibility */
     font-family: quicksand;
 }
