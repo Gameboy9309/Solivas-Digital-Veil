@@ -1,0 +1,257 @@
+---
+title: Book Recommendations
+layout: base.njk
+---
+
+<div class="recommender">
+  <p class="intro">Enter books you've already read and we'll search for recommendations that match your taste.</p>
+
+  <section class="input-section">
+    <div id="book-inputs">
+      <div class="book-input-row">
+        <input type="text" class="book-input" placeholder="e.g. Dune by Frank Herbert" aria-label="Book title" />
+        <button class="remove-book" aria-label="Remove book" title="Remove">✕</button>
+      </div>
+    </div>
+    <button id="add-book-btn" class="btn-secondary">+ Add another book</button>
+    <br />
+    <button id="find-btn" class="btn-primary">Find Recommendations</button>
+  </section>
+
+  <section id="status-section" class="status-section hidden" aria-live="polite">
+    <div class="spinner"></div>
+    <p id="status-msg">Searching...</p>
+  </section>
+
+  <section id="results-section" class="results-section hidden">
+    <h2>Recommended for You</h2>
+    <p class="results-meta" id="results-meta"></p>
+    <div id="results-grid" class="results-grid"></div>
+  </section>
+
+  <section id="error-section" class="error-section hidden">
+    <p id="error-msg"></p>
+  </section>
+</div>
+
+<script>
+(function () {
+  const OL_SEARCH = 'https://openlibrary.org/search.json';
+  const OL_SUBJECTS = 'https://openlibrary.org/subjects';
+  const OL_COVERS = 'https://covers.openlibrary.org/b/id';
+
+  const addBtn = document.getElementById('add-book-btn');
+  const findBtn = document.getElementById('find-btn');
+  const inputsContainer = document.getElementById('book-inputs');
+  const statusSection = document.getElementById('status-section');
+  const statusMsg = document.getElementById('status-msg');
+  const resultsSection = document.getElementById('results-section');
+  const resultsMeta = document.getElementById('results-meta');
+  const resultsGrid = document.getElementById('results-grid');
+  const errorSection = document.getElementById('error-section');
+  const errorMsg = document.getElementById('error-msg');
+
+  function setStatus(msg) {
+    statusMsg.textContent = msg;
+    statusSection.classList.remove('hidden');
+    resultsSection.classList.add('hidden');
+    errorSection.classList.add('hidden');
+  }
+
+  function showError(msg) {
+    errorMsg.textContent = msg;
+    errorSection.classList.remove('hidden');
+    statusSection.classList.add('hidden');
+  }
+
+  function createBookInputRow() {
+    const row = document.createElement('div');
+    row.className = 'book-input-row';
+    row.innerHTML = `
+      <input type="text" class="book-input" placeholder="Book title or title + author" aria-label="Book title" />
+      <button class="remove-book" aria-label="Remove book" title="Remove">✕</button>
+    `;
+    row.querySelector('.remove-book').addEventListener('click', () => {
+      if (inputsContainer.querySelectorAll('.book-input-row').length > 1) {
+        row.remove();
+      }
+    });
+    return row;
+  }
+
+  // Wire up the initial remove button
+  inputsContainer.querySelector('.remove-book').addEventListener('click', function () {
+    if (inputsContainer.querySelectorAll('.book-input-row').length > 1) {
+      this.closest('.book-input-row').remove();
+    }
+  });
+
+  addBtn.addEventListener('click', () => {
+    const row = createBookInputRow();
+    inputsContainer.appendChild(row);
+    row.querySelector('input').focus();
+  });
+
+  findBtn.addEventListener('click', async () => {
+    const titles = Array.from(document.querySelectorAll('.book-input'))
+      .map(i => i.value.trim())
+      .filter(Boolean);
+
+    if (titles.length === 0) {
+      showError('Please enter at least one book you have read.');
+      return;
+    }
+
+    findBtn.disabled = true;
+    setStatus('Looking up your books...');
+
+    try {
+      const recommendations = await getRecommendations(titles);
+      showResults(recommendations, titles);
+    } catch (err) {
+      showError('Something went wrong while fetching recommendations. Please try again.');
+      console.error(err);
+    } finally {
+      findBtn.disabled = false;
+    }
+  });
+
+  async function fetchJSON(url) {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
+    return res.json();
+  }
+
+  async function findBook(titleQuery) {
+    const url = `${OL_SEARCH}?q=${encodeURIComponent(titleQuery)}&limit=1&fields=key,title,author_name,subject,cover_i,edition_count,first_publish_year`;
+    const data = await fetchJSON(url);
+    return data.docs[0] || null;
+  }
+
+  async function searchBySubjectSlug(slug) {
+    const url = `${OL_SUBJECTS}/${slug}.json?limit=12`;
+    try {
+      const data = await fetchJSON(url);
+      return data.works || [];
+    } catch {
+      return [];
+    }
+  }
+
+  function toSubjectSlug(subject) {
+    return subject.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+  }
+
+  async function getRecommendations(inputTitles) {
+    setStatus('Looking up your books on Open Library...');
+    const foundBooks = await Promise.all(inputTitles.map(findBook));
+    const validBooks = foundBooks.filter(Boolean);
+
+    if (validBooks.length === 0) {
+      throw new Error('None of your books could be found. Try different titles.');
+    }
+
+    // Collect subjects and authors from read books
+    const subjectCounts = {};
+    const readTitlesNorm = new Set(validBooks.map(b => normalise(b.title)));
+    inputTitles.forEach(t => readTitlesNorm.add(normalise(t)));
+
+    for (const book of validBooks) {
+      const subjects = (book.subject || []).filter(s => s.length < 50);
+      subjects.slice(0, 8).forEach(s => {
+        subjectCounts[s] = (subjectCounts[s] || 0) + 1;
+      });
+    }
+
+    // Pick top subjects (prefer subjects shared across multiple read books)
+    const topSubjects = Object.entries(subjectCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 6)
+      .map(([s]) => s);
+
+    setStatus(`Finding books similar to what you like...`);
+
+    const seenKeys = new Set();
+    const recommendations = [];
+
+    const subjectResults = await Promise.all(topSubjects.map(s => searchBySubjectSlug(toSubjectSlug(s))));
+
+    subjectResults.forEach((works, idx) => {
+      const subject = topSubjects[idx];
+      works.forEach(work => {
+        if (!work.key || seenKeys.has(work.key)) return;
+        if (readTitlesNorm.has(normalise(work.title))) return;
+        seenKeys.add(work.key);
+        recommendations.push({
+          key: work.key,
+          title: work.title,
+          author: work.authors?.[0]?.name || 'Unknown author',
+          cover_id: work.cover_id,
+          matchedSubjects: [subject],
+          score: subjectCounts[subject] || 1,
+        });
+      });
+    });
+
+    // Deduplicate and merge matched subjects
+    const merged = new Map();
+    for (const rec of recommendations) {
+      if (merged.has(rec.key)) {
+        const existing = merged.get(rec.key);
+        existing.score += rec.score;
+        existing.matchedSubjects.push(...rec.matchedSubjects);
+      } else {
+        merged.set(rec.key, { ...rec, matchedSubjects: [...rec.matchedSubjects] });
+      }
+    }
+
+    return Array.from(merged.values())
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 24);
+  }
+
+  function normalise(str) {
+    return (str || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  }
+
+  function showResults(recs, inputTitles) {
+    statusSection.classList.add('hidden');
+    resultsSection.classList.remove('hidden');
+    errorSection.classList.add('hidden');
+
+    if (recs.length === 0) {
+      resultsMeta.textContent = 'No recommendations found. Try adding more books or different titles.';
+      resultsGrid.innerHTML = '';
+      return;
+    }
+
+    resultsMeta.textContent = `Found ${recs.length} recommendations based on: ${inputTitles.join(', ')}.`;
+    resultsGrid.innerHTML = recs.map(rec => {
+      const coverUrl = rec.cover_id
+        ? `${OL_COVERS}/${rec.cover_id}-M.jpg`
+        : null;
+      const olUrl = `https://openlibrary.org${rec.key}`;
+      const tags = [...new Set(rec.matchedSubjects)].slice(0, 3);
+      return `
+        <article class="book-card">
+          <a href="${olUrl}" target="_blank" rel="noopener" class="book-cover-link">
+            ${coverUrl
+              ? `<img class="book-cover" src="${coverUrl}" alt="Cover of ${escHtml(rec.title)}" loading="lazy" onerror="this.closest('.book-cover-link').classList.add('no-cover')" />`
+              : `<div class="book-cover-placeholder">📖</div>`
+            }
+          </a>
+          <div class="book-info">
+            <h3 class="book-title"><a href="${olUrl}" target="_blank" rel="noopener">${escHtml(rec.title)}</a></h3>
+            <p class="book-author">${escHtml(rec.author)}</p>
+            <div class="book-tags">${tags.map(t => `<span class="tag">${escHtml(t)}</span>`).join('')}</div>
+          </div>
+        </article>
+      `;
+    }).join('');
+  }
+
+  function escHtml(str) {
+    return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+})();
+</script>
