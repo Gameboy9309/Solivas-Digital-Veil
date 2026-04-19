@@ -1,0 +1,21 @@
+---
+layout: base.njk
+title: Notes
+permalink: /notes/
+---
+
+<div class="page-header">
+  <h1>Notes</h1>
+  <p class="page-description">Quick thoughts, observations, and things worth remembering.</p>
+</div>
+
+<div class="note-list">
+  {% for note in collections.notes %}
+    <a class="card" href="{{ note.url }}">
+      <div class="note-card-date">{{ note.date | readableDate }}</div>
+      <div class="note-card-content">{{ note.templateContent | safe }}</div>
+    </a>
+  {% else %}
+    <p class="empty-state">No notes yet.</p>
+  {% endfor %}
+</div>

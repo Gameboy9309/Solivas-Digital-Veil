@@ -1,0 +1,34 @@
+---
+layout: base.njk
+title: Ideas
+permalink: /ideas/
+---
+
+<div class="page-header">
+  <h1>Ideas</h1>
+  <p class="page-description">
+    A garden of thoughts at various stages of growth.
+    🌱 Seedling — new and rough.
+    🌿 Growing — being actively explored.
+    🌲 Evergreen — fairly settled.
+  </p>
+</div>
+
+<div class="idea-list">
+  {% for idea in collections.ideas %}
+    <a class="card" href="{{ idea.url }}">
+      <div class="idea-card-header">
+        <span class="idea-card-title">{{ idea.data.title }}</span>
+        {% if idea.data.stage %}
+          <span class="stage-badge stage-{{ idea.data.stage }}">{{ idea.data.stage }}</span>
+        {% endif %}
+      </div>
+      <div class="idea-card-meta">Last tended {{ idea.date | readableDate }}</div>
+      {% if idea.data.excerpt %}
+        <p class="idea-card-excerpt">{{ idea.data.excerpt }}</p>
+      {% endif %}
+    </a>
+  {% else %}
+    <p class="empty-state">No ideas planted yet.</p>
+  {% endfor %}
+</div>

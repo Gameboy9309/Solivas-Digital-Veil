@@ -1,22 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ title }}</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% if title %}{{ title }} — Solivas's Garden{% else %}Solivas's Garden{% endif %}</title>
   <link rel="stylesheet" href="/css/style.css" />
-  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header>
-    <h1>{{ title }}</h1>
-    <nav>
-      <a href="/">Home</a>
-      <a href="/book-recommendations/">Book Recommendations</a>
-    </nav>
+  <header class="site-header">
+    <div class="wrapper">
+      <a href="/" class="site-title">🌱 Solivas's Garden</a>
+      <nav class="site-nav">
+        <a href="/blog/" {% if page.url.startsWith('/blog') %}class="active"{% endif %}>Blog</a>
+        <a href="/notes/" {% if page.url.startsWith('/notes') %}class="active"{% endif %}>Notes</a>
+        <a href="/ideas/" {% if page.url.startsWith('/ideas') %}class="active"{% endif %}>Ideas</a>
+        <a href="/about/" {% if page.url == '/about/' %}class="active"{% endif %}>About</a>
+      </nav>
+    </div>
   </header>
+
   <main>
-    {{ content | safe }}
+    <div class="wrapper">
+      {{ content | safe }}
+    </div>
   </main>
+
+  <footer class="site-footer">
+    <p>A digital garden — perpetually growing.</p>
+  </footer>
 </body>
 </html>

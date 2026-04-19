@@ -1,0 +1,14 @@
+---
+layout: base.njk
+---
+
+<a class="back-link" href="/notes/">← Back to notes</a>
+
+<article class="note-full">
+  <div class="note-full-date">
+    <time datetime="{{ page.date | isoDate }}">{{ page.date | readableDate }}</time>
+  </div>
+  <div class="note-full-body">
+    {{ content | safe }}
+  </div>
+</article>

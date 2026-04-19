@@ -1,0 +1,23 @@
+---
+layout: base.njk
+---
+
+<a class="back-link" href="/ideas/">← Back to ideas</a>
+
+<article>
+  <header class="content-header">
+    <h1 class="content-title">{{ title }}</h1>
+    <div class="idea-stage-row">
+      {% if stage %}
+        <span class="stage-badge stage-{{ stage }}">{{ stage }}</span>
+      {% endif %}
+      <div class="content-meta">
+        <time datetime="{{ page.date | isoDate }}">Last tended {{ page.date | readableDate }}</time>
+      </div>
+    </div>
+  </header>
+
+  <div class="content-body">
+    {{ content | safe }}
+  </div>
+</article>
