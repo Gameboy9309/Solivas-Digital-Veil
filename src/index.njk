@@ -1,6 +1,81 @@
 ---
-title: Solivas Digital Veil
 layout: base.njk
+title: Home
 ---
 
-<p>Welcome. Use the <a href="/book-recommendations/">Book Recommendations</a> tool to discover your next read.</p>
+<div class="garden-intro">
+  <h1>Welcome to my garden 🌱</h1>
+  <p>
+    This is my digital garden — a space for long-form writing, quick thoughts, half-baked ideas,
+    and everything in between. Things here are always growing, never finished.
+  </p>
+</div>
+
+<section class="garden-section">
+  <div class="section-heading">
+    <h2>Recent Writing</h2>
+    <a href="/blog/">All posts →</a>
+  </div>
+  <div class="post-list">
+    {% for post in collections.blog | limit(3) %}
+      <a class="card" href="{{ post.url }}">
+        <div class="post-card-meta">{{ post.date | readableDate }}</div>
+        <div class="post-card-title">{{ post.data.title }}</div>
+        {% if post.data.excerpt %}
+          <p class="post-card-excerpt">{{ post.data.excerpt }}</p>
+        {% endif %}
+        {% if post.data.topics %}
+          <div class="tags">
+            {% for t in post.data.topics %}
+              <span class="tag">{{ t }}</span>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </a>
+    {% else %}
+      <p class="empty-state">No posts yet — check back soon.</p>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="garden-section">
+  <div class="section-heading">
+    <h2>Recent Notes</h2>
+    <a href="/notes/">All notes →</a>
+  </div>
+  <div class="note-list">
+    {% for note in collections.notes | limit(3) %}
+      <a class="card" href="{{ note.url }}">
+        <div class="note-card-date">{{ note.date | readableDate }}</div>
+        <div class="note-card-content">{{ note.templateContent | safe }}</div>
+      </a>
+    {% else %}
+      <p class="empty-state">No notes yet.</p>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="garden-section">
+  <div class="section-heading">
+    <h2>Ideas Garden</h2>
+    <a href="/ideas/">All ideas →</a>
+  </div>
+  <div class="idea-list">
+    {% for idea in collections.ideas | limit(3) %}
+      <a class="card" href="{{ idea.url }}">
+        <div class="idea-card-header">
+          <span class="idea-card-title">{{ idea.data.title }}</span>
+          {% if idea.data.stage %}
+            <span class="stage-badge stage-{{ idea.data.stage }}">{{ idea.data.stage }}</span>
+          {% endif %}
+        </div>
+        <div class="idea-card-meta">Last tended {{ idea.date | readableDate }}</div>
+        {% if idea.data.excerpt %}
+          <p class="idea-card-excerpt">{{ idea.data.excerpt }}</p>
+        {% endif %}
+      </a>
+    {% else %}
+      <p class="empty-state">No ideas planted yet.</p>
+    {% endfor %}
+  </div>
+</section>
